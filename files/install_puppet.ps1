@@ -303,8 +303,8 @@ try {
   Write-Log "Waiting for pxp-agent processes to stop"
   Get-Process -Name "pxp-agent" -ErrorAction SilentlyContinue | ForEach-Object {
     if ($_) {
-      # wait on each process for 2 minutes (120000 milliseconds)
-      if (!$_.WaitForExit(120000)){
+      # wait on each process for 8 minutes (420000 milliseconds)
+      if (!$_.WaitForExit(420000)){
         Write-Log "ERROR: Timed out waiting for pxp-agent!"
         throw
       }
