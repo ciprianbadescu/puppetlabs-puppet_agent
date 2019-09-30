@@ -2,11 +2,11 @@ require 'spec_helper'
 
 describe 'puppet_agent' do
   package_name = 'puppet-agent'
-
+  lsbdistcodename_stretch = 'stretch'
   facts = {
     :lsbdistid            => 'Debian',
     :osfamily             => 'Debian',
-    :lsbdistcodename      => 'stretch',
+    :lsbdistcodename      => lsbdistcodename_stretch,
     :os                   => {
                                'name' => 'Debian',
                                'release' => {
@@ -89,12 +89,13 @@ describe 'puppet_agent' do
     end
 
     context "xenial" do
+      lsbdistcodename_xenial = 'xenial'
       let(:facts) {
         facts.merge({
           :is_pe        => true,
           :platform_tag => 'ubuntu-1604-x86_64',
           :operatingsystem => 'Ubuntu',
-          :lsbdistcodename => 'xenial',
+          :lsbdistcodename => lsbdistcodename_xenial,
           :os => {
             'name' => 'Ubuntu',
             'release' => {
@@ -119,6 +120,11 @@ describe 'puppet_agent' do
           "Acquire::https::master.example.vm::CaInfo \"/etc/puppetlabs/puppet/ssl/certs/ca.pem\";",
           "Acquire::http::proxy::master.example.vm DIRECT;",
         ]
+        it { is_expected.to contain_apt__pin("pin #{package_name} package").with({
+              'packages' => package_name,
+              'priority' => 1001,
+              'version'  => "#{package_version}-1#{lsbdistcodename_xenial}",
+        }) }
         it { is_expected.to contain_apt__setting('conf-pc_repo').with({
           'priority' => 90,
           'content'  => apt_settings.join(''),
@@ -135,6 +141,7 @@ describe 'puppet_agent' do
 
         it { is_expected.not_to contain_exec('pc_repo_force') }
 
+        it { is_expected.not_to contain_apt__pin('pin puppet-agent package') }
         it { is_expected.not_to contain_apt__setting('conf-pc_repo') }
       end
 
@@ -152,6 +159,12 @@ describe 'puppet_agent' do
         "Acquire::https::master.example.vm::CaInfo \"/etc/puppetlabs/puppet/ssl/certs/ca.pem\";",
         "Acquire::http::proxy::master.example.vm DIRECT;",
       ]
+      it { is_expected.to contain_apt__pin("pin #{package_name} package").with({
+        'packages' => package_name,
+        'priority' => 1001,
+        'version'  => "#{package_version}-1#{lsbdistcodename_stretch}",
+      }) }
+
       it { is_expected.to contain_apt__setting('conf-pc_repo').with({
         'priority' => 90,
         'content'  => apt_settings.join(''),
@@ -215,6 +228,7 @@ describe 'puppet_agent' do
         }
       }
 
+      it { is_expected.not_to contain_apt__pin('pin puppet-agent package') }
       it { is_expected.not_to contain_apt__setting('conf-pc_repo') }
       it { is_expected.not_to contain_apt__key('legacy key') }
       it { is_expected.not_to contain_apt__source('pc_repo') }
